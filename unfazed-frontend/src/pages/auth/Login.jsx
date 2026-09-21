@@ -36,7 +36,19 @@ const Login = () => {
         navigate('/dashboard');
       }, 800);
     } catch (err) {
-      setServerError(err.response?.data?.message || 'Invalid email or password. Please try again.');
+      // Handle validation errors from express-validator
+      const errorData = err.response?.data;
+      if (errorData?.errors && Array.isArray(errorData.errors)) {
+        const errorMessages = errorData.errors
+          .map(e => `${e.field}: ${e.message}`)
+          .join(' • ');
+        setServerError(errorMessages);
+      } else if (errorData?.message) {
+        // Handle other error messages (e.g., invalid credentials)
+        setServerError(errorData.message);
+      } else {
+        setServerError('Invalid email or password. Please try again.');
+      }
     } finally {
       setSubmitting(false);
     }

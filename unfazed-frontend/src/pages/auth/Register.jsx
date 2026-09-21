@@ -43,7 +43,19 @@ const Register = () => {
         navigate('/dashboard');
       }, 1000);
     } catch (err) {
-      setServerError(err.response?.data?.message || 'Failed to create account. Please try again.');
+      // Handle validation errors from express-validator
+      const errorData = err.response?.data;
+      if (errorData?.errors && Array.isArray(errorData.errors)) {
+        const errorMessages = errorData.errors
+          .map(e => `${e.field}: ${e.message}`)
+          .join(' • ');
+        setServerError(errorMessages);
+      } else if (errorData?.message) {
+        // Handle other error messages (e.g., duplicate email)
+        setServerError(errorData.message);
+      } else {
+        setServerError('Failed to create account. Please try again.');
+      }
     } finally {
       setSubmitting(false);
     }

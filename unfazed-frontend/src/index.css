@@ -39,6 +39,14 @@
     font-family: 'Inter', sans-serif;
   }
 
+  h1, h2, h3, h4, p, span, div {
+    /* Ensure text on light backgrounds is readable */
+  }
+  
+  .bg-bg-main, .bg-bg-card, .bg-bg-card-elevated, .bg-white {
+    color: #1E3145;
+  }
+
   h1, h2, h3, h4 {
     color: #1E3145;
   }
@@ -58,4 +66,52 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
+}
+
+/* Base Layout Classes */
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
+  background: #CDE2F2;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.main-area {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.page-content {
+  padding: 32px;
+  min-width: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    display: none;
+  }
+  .page-content {
+    padding: 16px;
+  }
 }

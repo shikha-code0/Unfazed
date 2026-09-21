@@ -25,6 +25,10 @@ const therapistSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    title: {
+      type: String,
+      default: '',
+    },
     bio: {
       type: String,
       default: '',
@@ -48,6 +52,11 @@ const therapistSchema = new mongoose.Schema(
     sessionDuration: {
       type: Number,
       default: 50, // in minutes
+    },
+    subscriptionTier: {
+      type: String,
+      enum: ['Free', 'Pro', 'Clinic'],
+      default: 'Free',
     },
   },
   {

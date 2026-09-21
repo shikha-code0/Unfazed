@@ -11,7 +11,8 @@ import {
   HelpCircle,
   LogOut,
   ExternalLink,
-  X
+  X,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -27,11 +28,12 @@ const Sidebar = ({ isOpen, onClose }) => {
 
   const navItems = [
     { name: 'Overview', path: '/dashboard', icon: LayoutDashboard, active: true },
-    { name: 'Calendar', path: '#', icon: Calendar, active: false, badge: 'Soon' },
-    { name: 'Clients', path: '#', icon: Users, active: false, badge: 'Soon' },
-    { name: 'Notes', path: '#', icon: FileText, active: false, badge: 'Soon' },
-    { name: 'Payments', path: '#', icon: CreditCard, active: false, badge: 'Soon' },
-    { name: 'Analytics', path: '#', icon: BarChart3, active: false, badge: 'Soon' },
+    { name: 'Calendar', path: '/schedule', icon: Calendar, active: true },
+    { name: 'Clients', path: '/clients', icon: Users, active: true },
+    { name: 'Notes', path: '/notes', icon: FileText, active: true },
+    { name: 'Payments', path: '/payments', icon: CreditCard, active: true },
+    { name: 'Chat', path: '/chat', icon: MessageSquare, active: true },
+    { name: 'Analytics', path: '/analytics', icon: BarChart3, active: true },
   ];
 
   return (
@@ -46,7 +48,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-50 w-[252px] bg-dark-sidebar border-r border-border/20 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`h-full bg-dark-sidebar border-r border-border/20 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 fixed top-0 left-0 bottom-0 z-50 w-[252px] ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

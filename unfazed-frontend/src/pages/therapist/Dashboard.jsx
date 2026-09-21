@@ -23,7 +23,6 @@ import {
 
 const Dashboard = () => {
   const { user, updateProfile } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -80,17 +79,10 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-bg-main flex">
+    <>
       <Toast message={toastMessage} type="success" onClose={() => setToastMessage('')} />
 
-      {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
-      {/* Main Content Area */}
-      <div className="flex-1 lg:pl-[252px] flex flex-col min-w-0">
-        <Topbar onOpenSidebar={() => setSidebarOpen(true)} title="Practice Overview" />
-
-        <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-6">
+      <main className="max-w-7xl mx-auto w-full space-y-6">
           {/* Welcome Banner */}
           <div className="bg-bg-dark-sidebar rounded-card p-6 sm:p-8 border border-border/20 shadow-card relative overflow-hidden">
             <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-primary/20 blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
@@ -309,110 +301,7 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-        </main>
-      </div>
-
-      {/* Edit Profile Modal */}
-      {isEditingProfile && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/40 backdrop-blur-xs">
-          <div className="bg-bg-card-elevated rounded-card shadow-card border border-border w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-              <h3 className="text-base font-bold text-ink">Update Practice Details</h3>
-              <button
-                onClick={() => setIsEditingProfile(false)}
-                className="text-slate hover:text-ink text-sm font-semibold p-1"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveProfile} className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-ink uppercase tracking-wider mb-1">
-                  Bio / Clinical Approach
-                </label>
-                <textarea
-                  rows="3"
-                  value={formData.bio}
-                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                  placeholder="Share your approach to therapy..."
-                  className="w-full p-3 bg-bg-card text-ink text-sm rounded-[10px] border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-ink uppercase tracking-wider mb-1">
-                    Fee (₹ INR)
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.consultationFee}
-                    onChange={(e) => setFormData({ ...formData, consultationFee: e.target.value })}
-                    className="w-full h-[44px] px-3.5 bg-bg-card text-ink text-sm rounded-[10px] border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-ink uppercase tracking-wider mb-1">
-                    Duration (Minutes)
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.sessionDuration}
-                    onChange={(e) => setFormData({ ...formData, sessionDuration: e.target.value })}
-                    className="w-full h-[44px] px-3.5 bg-bg-card text-ink text-sm rounded-[10px] border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-ink uppercase tracking-wider mb-1">
-                  Specializations (comma-separated)
-                </label>
-                <input
-                  type="text"
-                  value={formData.specializations}
-                  onChange={(e) => setFormData({ ...formData, specializations: e.target.value })}
-                  placeholder="Anxiety, Depression, Relationships"
-                  className="w-full h-[44px] px-3.5 bg-bg-card text-ink text-sm rounded-[10px] border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-ink uppercase tracking-wider mb-1">
-                  Languages Spoken (comma-separated)
-                </label>
-                <input
-                  type="text"
-                  value={formData.languages}
-                  onChange={(e) => setFormData({ ...formData, languages: e.target.value })}
-                  placeholder="English, Hindi, Kannada"
-                  className="w-full h-[44px] px-3.5 bg-bg-card text-ink text-sm rounded-[10px] border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors"
-                />
-              </div>
-
-              <div className="pt-3 flex items-center justify-end gap-3 border-t border-border/60">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setIsEditingProfile(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  loading={updating}
-                >
-                  Save Changes
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
 };
 

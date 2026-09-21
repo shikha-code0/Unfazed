@@ -17,21 +17,6 @@ const registerTherapist = async (req, res, next) => {
   try {
     const { name, email, password, specialization } = req.body;
 
-    // Validation
-    if (!name || !email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide all required fields (name, email, password).',
-      });
-    }
-
-    if (password.length < 6) {
-      return res.status(400).json({
-        success: false,
-        message: 'Password must be at least 6 characters long.',
-      });
-    }
-
     const emailLower = email.toLowerCase().trim();
     const existingTherapist = await TherapistService.findByEmail(emailLower);
 
@@ -103,13 +88,6 @@ const registerTherapist = async (req, res, next) => {
 const loginTherapist = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide email and password.',
-      });
-    }
 
     const emailLower = email.toLowerCase().trim();
     const therapist = await TherapistService.findByEmail(emailLower);

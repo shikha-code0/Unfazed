@@ -14,7 +14,7 @@ const Topbar = ({ onOpenSidebar, title = 'Overview' }) => {
   };
 
   return (
-    <header className="sticky top-0 z-30 h-16 lg:h-[72px] bg-surface/90 backdrop-blur-md border-b border-border/80 px-4 lg:px-8 flex items-center justify-between">
+    <header className="h-16 lg:h-[72px] bg-surface/90 backdrop-blur-md border-b border-border/80 px-4 lg:px-8 flex items-center justify-between w-full">
       {/* Left Title & Mobile Menu Toggle */}
       <div className="flex items-center gap-3">
         <button
