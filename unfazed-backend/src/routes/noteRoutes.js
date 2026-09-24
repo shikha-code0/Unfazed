@@ -5,6 +5,7 @@ const {
   getClientNotes,
   createNote,
   updateNote,
+  deleteNote,
 } = require('../controllers/noteController');
 
 router.use(protect);
@@ -16,6 +17,7 @@ router.route('/client/:clientId')
   .get(getClientNotes);
 
 router.route('/:id')
-  .put(updateNote);
+  .put(updateNote)
+  .delete(deleteNote);
 
 module.exports = router;

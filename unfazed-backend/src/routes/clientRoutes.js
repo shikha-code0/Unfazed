@@ -13,23 +13,24 @@ const {
   createClientConsent,
 } = require('../controllers/clientController');
 
-router.use(protect); // All client routes are protected
+router.use(protect);
 
 router.route('/')
   .get(getClients)
   .post(createClient);
 
-router.route('/:id')
-  .get(getClientById)
-  .put(updateClient)
-  .delete(deleteClient);
-
-router.route('/:id/intake')
+router.route('/:clientId/intake')
   .get(getClientIntake)
   .put(updateClientIntake);
 
-router.route('/:id/consent')
+router.route('/:clientId/consent')
   .get(getClientConsent)
   .post(createClientConsent);
+
+router.route('/:clientId')
+  .get(getClientById)
+  .patch(updateClient)
+  .put(updateClient)
+  .delete(deleteClient);
 
 module.exports = router;

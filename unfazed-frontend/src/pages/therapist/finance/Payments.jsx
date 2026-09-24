@@ -1,24 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Filter, CreditCard, Download, ArrowUpRight } from 'lucide-react';
-import Sidebar from '../../../components/common/Sidebar';
-import Topbar from '../../../components/common/Topbar';
 import Button from '../../../components/common/Button';
 import api from '../../../api/axios';
 import Loader from '../../../components/common/Loader';
 
 const Payments = () => {
-  const [invoices, setInvoices] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchInvoices();
+    fetchPayments();
   }, []);
 
-  const fetchInvoices = async () => {
+  const fetchPayments = async () => {
     try {
-      const res = await api.get('/payments/invoices');
+      const res = await api.get('/payments');
       if (res.data.success) {
-        setInvoices(res.data.invoices);
+        setPayments(res.data.payments);
       }
     } catch (err) {
       console.error(err);
@@ -38,7 +36,7 @@ const Payments = () => {
                 <p className="text-slate mt-1">Manage your billing, track payments, and send invoices.</p>
               </div>
               <div className="flex items-center gap-3">
-                <Button variant="primary" icon={Plus}>Create Invoice</Button>
+                <Button variant="primary" icon={Plus}>Record Payment</Button>
               </div>
             </div>
 
@@ -47,25 +45,25 @@ const Payments = () => {
               <div className="bg-bg-card border border-border rounded-xl p-6 shadow-sm">
                 <div className="text-sm font-semibold text-slate mb-1">Outstanding Balance</div>
                 <div className="text-3xl font-bold text-ink flex items-center gap-2">
-                  ₹12,500 <ArrowUpRight className="w-5 h-5 text-error" />
+                  ₹{payments.filter(p => p.status === 'pending').reduce((acc, p) => acc + p.amount, 0)} <ArrowUpRight className="w-5 h-5 text-error" />
                 </div>
               </div>
               <div className="bg-bg-card border border-border rounded-xl p-6 shadow-sm">
                 <div className="text-sm font-semibold text-slate mb-1">Received This Month</div>
                 <div className="text-3xl font-bold text-ink flex items-center gap-2">
-                  ₹45,000 <ArrowUpRight className="w-5 h-5 text-success" />
+                  ₹{payments.filter(p => p.status === 'paid').reduce((acc, p) => acc + p.amount, 0)} <ArrowUpRight className="w-5 h-5 text-success" />
                 </div>
               </div>
               <div className="bg-bg-card border border-border rounded-xl p-6 shadow-sm">
-                <div className="text-sm font-semibold text-slate mb-1">Total Unpaid Invoices</div>
-                <div className="text-3xl font-bold text-ink">4</div>
+                <div className="text-sm font-semibold text-slate mb-1">Total Unpaid Payments</div>
+                <div className="text-3xl font-bold text-ink">{payments.filter(p => p.status === 'pending').length}</div>
               </div>
             </div>
 
             {/* List */}
             <div className="bg-bg-card border border-border rounded-xl shadow-sm overflow-hidden mt-8">
               <div className="p-4 border-b border-border flex justify-between items-center bg-bg-card-elevated">
-                <h3 className="font-bold text-ink">Recent Invoices</h3>
+                <h3 className="font-bold text-ink">Recent Payments</h3>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" icon={Filter}>Filter</Button>
                 </div>
@@ -73,50 +71,48 @@ const Payments = () => {
               
               {loading ? (
                 <div className="p-12 flex justify-center"><Loader /></div>
-              ) : invoices.length === 0 ? (
+              ) : payments.length === 0 ? (
                 <div className="p-12 text-center text-slate flex flex-col items-center">
                   <CreditCard className="w-10 h-10 mb-4 opacity-50" />
-                  No invoices found. Create one to get started.
+                  No payments found. Create one to get started.
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-bg-main border-b border-border">
-                        <th className="py-4 px-6 text-xs font-bold text-slate uppercase tracking-wider">Invoice</th>
+                        <th className="py-4 px-6 text-xs font-bold text-slate uppercase tracking-wider">Transaction ID</th>
                         <th className="py-4 px-6 text-xs font-bold text-slate uppercase tracking-wider">Client</th>
                         <th className="py-4 px-6 text-xs font-bold text-slate uppercase tracking-wider">Amount</th>
                         <th className="py-4 px-6 text-xs font-bold text-slate uppercase tracking-wider">Status</th>
+                        <th className="py-4 px-6 text-xs font-bold text-slate uppercase tracking-wider">Method</th>
                         <th className="py-4 px-6 text-xs font-bold text-slate uppercase tracking-wider">Date</th>
-                        <th className="py-4 px-6 text-right"></th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                      {invoices.map(inv => (
-                        <tr key={inv._id} className="hover:bg-bg-main transition-colors">
-                          <td className="py-4 px-6 font-semibold text-ink">{inv.invoiceNumber}</td>
+                      {payments.map(p => (
+                        <tr key={p._id} className="hover:bg-bg-main transition-colors">
+                          <td className="py-4 px-6 font-semibold text-ink text-sm">{p.transactionId || '—'}</td>
                           <td className="py-4 px-6">
-                            <div className="font-bold text-ink">{inv.clientId?.name || 'Unknown'}</div>
+                            <div className="font-bold text-ink">{p.clientId?.name || 'Unknown'}</div>
                           </td>
                           <td className="py-4 px-6 font-bold">
-                            ₹{inv.amount}
+                            ₹{p.amount}
                           </td>
                           <td className="py-4 px-6">
                             <span className={`px-2.5 py-1 rounded-full text-xs font-semibold capitalize
-                              ${inv.status === 'paid' ? 'bg-sage/20 text-sage' : 
-                                inv.status === 'draft' ? 'bg-slate/10 text-slate' :
-                                'bg-amber-100 text-amber-700'}`}
+                              ${p.status === 'paid' ? 'bg-sage/20 text-sage' : 
+                                p.status === 'failed' ? 'bg-error/10 text-error' :
+                                'bg-warning/20 text-warning-dark'}`}
                             >
-                              {inv.status}
+                              {p.status}
                             </span>
                           </td>
-                          <td className="py-4 px-6 text-sm text-slate">
-                            {new Date(inv.createdAt).toLocaleDateString()}
+                          <td className="py-4 px-6 text-sm text-slate capitalize">
+                            {p.method}
                           </td>
-                          <td className="py-4 px-6 text-right">
-                            <button className="p-2 text-slate hover:bg-white border border-border rounded-md shadow-sm">
-                              <Download className="w-4 h-4" />
-                            </button>
+                          <td className="py-4 px-6 text-sm text-slate">
+                            {new Date(p.createdAt).toLocaleDateString()}
                           </td>
                         </tr>
                       ))}

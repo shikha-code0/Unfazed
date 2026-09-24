@@ -16,10 +16,21 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = async () => {
       if (token) {
         try {
-          const res = await api.get('/auth/me');
-          if (res.data.success) {
-            setUser(res.data.therapist);
-            localStorage.setItem('unfazed_user', JSON.stringify(res.data.therapist));
+          // If we have a role in localStorage, we can use it to determine which endpoint to hit
+          const role = localStorage.getItem('unfazed_role') || 'therapist';
+          
+          if (role === 'client') {
+            const res = await api.get('/auth/client/me');
+            if (res.data.success) {
+              setUser({ ...res.data.client, role: 'client' });
+              localStorage.setItem('unfazed_user', JSON.stringify({ ...res.data.client, role: 'client' }));
+            }
+          } else {
+            const res = await api.get('/auth/me');
+            if (res.data.success) {
+              setUser({ ...res.data.therapist, role: 'therapist' });
+              localStorage.setItem('unfazed_user', JSON.stringify({ ...res.data.therapist, role: 'therapist' }));
+            }
           }
         } catch (err) {
           console.error('Token validation failed:', err);
@@ -30,15 +41,28 @@ export const AuthProvider = ({ children }) => {
     };
 
     checkAuth();
-  }, []);
+  }, [token]);
 
   const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
     if (res.data.success) {
       setToken(res.data.token);
-      setUser(res.data.therapist);
+      setUser({ ...res.data.therapist, role: 'therapist' });
       localStorage.setItem('unfazed_token', res.data.token);
-      localStorage.setItem('unfazed_user', JSON.stringify(res.data.therapist));
+      localStorage.setItem('unfazed_role', 'therapist');
+      localStorage.setItem('unfazed_user', JSON.stringify({ ...res.data.therapist, role: 'therapist' }));
+    }
+    return res.data;
+  };
+
+  const loginClient = async (email, password) => {
+    const res = await api.post('/auth/client/login', { email, password });
+    if (res.data.success) {
+      setToken(res.data.token);
+      setUser({ ...res.data.client, role: 'client' });
+      localStorage.setItem('unfazed_token', res.data.token);
+      localStorage.setItem('unfazed_role', 'client');
+      localStorage.setItem('unfazed_user', JSON.stringify({ ...res.data.client, role: 'client' }));
     }
     return res.data;
   };
@@ -47,9 +71,10 @@ export const AuthProvider = ({ children }) => {
     const res = await api.post('/auth/register', data);
     if (res.data.success) {
       setToken(res.data.token);
-      setUser(res.data.therapist);
+      setUser({ ...res.data.therapist, role: 'therapist' });
       localStorage.setItem('unfazed_token', res.data.token);
-      localStorage.setItem('unfazed_user', JSON.stringify(res.data.therapist));
+      localStorage.setItem('unfazed_role', 'therapist');
+      localStorage.setItem('unfazed_user', JSON.stringify({ ...res.data.therapist, role: 'therapist' }));
     }
     return res.data;
   };
@@ -59,6 +84,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     localStorage.removeItem('unfazed_token');
     localStorage.removeItem('unfazed_user');
+    localStorage.removeItem('unfazed_role');
   };
 
   const updateProfile = async (updates) => {
@@ -71,7 +97,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, token, loading, login, loginClient, register, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

@@ -145,10 +145,11 @@ const bookSession = async (req, res, next) => {
       });
     }
 
-    // Create or find client
+    // Create or find client (never return intakeData on this public route)
     const Client = require('../models/Client');
+    const Consent = require('../models/Consent');
     let client = await Client.findOne({ therapistId: therapist._id, email: clientEmail.toLowerCase().trim() });
-    
+
     if (!client) {
       client = await Client.create({
         therapistId: therapist._id,
@@ -159,7 +160,33 @@ const bookSession = async (req, res, next) => {
         consent: {
           given: true,
           timestamp: new Date(),
-        }
+          version: '1.0',
+        },
+      });
+    }
+
+    if (!client.consent?.given) {
+      client.consent = {
+        given: true,
+        timestamp: new Date(),
+        version: '1.0',
+      };
+      await client.save();
+    }
+
+    const existingConsent = await Consent.findOne({
+      clientId: client._id,
+      therapistId: therapist._id,
+      accepted: true,
+    });
+    if (!existingConsent) {
+      await Consent.create({
+        clientId: client._id,
+        therapistId: therapist._id,
+        consentVersion: '1.0',
+        accepted: true,
+        acceptedAt: new Date(),
+        ipAddress: req.headers['x-forwarded-for']?.toString().split(',')[0].trim() || req.ip || '',
       });
     }
 
@@ -187,7 +214,13 @@ const bookSession = async (req, res, next) => {
       success: true,
       message: 'Session booked successfully!',
       session: newSession,
-      client,
+      client: {
+        _id: client._id,
+        name: client.name,
+        email: client.email,
+        phone: client.phone,
+        status: client.status,
+      },
     });
   } catch (error) {
     next(error);
@@ -199,11 +232,15 @@ const bookSession = async (req, res, next) => {
 // @access  Private
 const getMySchedule = async (req, res, next) => {
   try {
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, clientId } = req.query;
 
     const query = {
       therapistId: req.therapist._id,
     };
+
+    if (clientId && mongoose.Types.ObjectId.isValid(clientId)) {
+      query.clientId = clientId;
+    }
 
     if (startDate || endDate) {
       query.startTime = {};

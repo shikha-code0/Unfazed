@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../../components/common/Sidebar';
 import Topbar from '../../components/common/Topbar';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Toast from '../../components/common/Toast';
+import api from '../../api/axios';
+import Loader from '../../components/common/Loader';
 import {
   Sparkles,
   Link as LinkIcon,
@@ -27,6 +29,9 @@ const Dashboard = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [updating, setUpdating] = useState(false);
+  
+  const [analytics, setAnalytics] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Profile Edit Form State
   const [formData, setFormData] = useState({
@@ -38,6 +43,23 @@ const Dashboard = () => {
   });
 
   const publicUrl = `${window.location.origin}/${user?.slug || 'dr-ananya-sharma'}`;
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, []);
+
+  const fetchAnalytics = async () => {
+    try {
+      const res = await api.get('/analytics');
+      if (res.data.success) {
+        setAnalytics(res.data.metrics);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(publicUrl);
@@ -125,6 +147,10 @@ const Dashboard = () => {
             </div>
           </div>
 
+          {loading ? (
+            <div className="flex justify-center p-12"><Loader /></div>
+          ) : (
+          <>
           {/* Stat Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-bg-card-elevated rounded-card p-5 border border-border shadow-sm flex flex-col">
@@ -134,7 +160,7 @@ const Dashboard = () => {
                 </div>
                 <span className="text-xs font-semibold text-sage flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> On track</span>
               </div>
-              <h3 className="text-3xl font-bold text-ink tracking-tight mb-1">4</h3>
+              <h3 className="text-3xl font-bold text-ink tracking-tight mb-1">{analytics?.todaysSessions?.length || 0}</h3>
               <p className="text-sm text-slate font-medium">Today's sessions</p>
             </div>
             
@@ -143,9 +169,9 @@ const Dashboard = () => {
                 <div className="p-2 bg-white/50 rounded-lg text-primary">
                   <Users className="w-5 h-5" />
                 </div>
-                <span className="text-xs font-semibold text-sage flex items-center gap-1">↑ 2 this month</span>
+                <span className="text-xs font-semibold text-slate flex items-center gap-1">Total active</span>
               </div>
-              <h3 className="text-3xl font-bold text-ink tracking-tight mb-1">18</h3>
+              <h3 className="text-3xl font-bold text-ink tracking-tight mb-1">{analytics?.activeClients || 0}</h3>
               <p className="text-sm text-slate font-medium">Active clients</p>
             </div>
 
@@ -154,10 +180,10 @@ const Dashboard = () => {
                 <div className="p-2 bg-white/50 rounded-lg text-primary">
                   <IndianRupee className="w-5 h-5" />
                 </div>
-                <span className="text-xs font-semibold text-sage flex items-center gap-1">↑ 12%</span>
+                <span className="text-xs font-semibold text-slate flex items-center gap-1">Today</span>
               </div>
-              <h3 className="text-3xl font-bold text-ink tracking-tight mb-1">₹45,000</h3>
-              <p className="text-sm text-slate font-medium">Monthly revenue</p>
+              <h3 className="text-3xl font-bold text-ink tracking-tight mb-1">₹{analytics?.todaysRevenue || 0}</h3>
+              <p className="text-sm text-slate font-medium">Today's revenue</p>
             </div>
 
             <div className="bg-bg-card-elevated rounded-card p-5 border border-border shadow-sm flex flex-col">
@@ -165,10 +191,10 @@ const Dashboard = () => {
                 <div className="p-2 bg-white/50 rounded-lg text-primary">
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
-                <span className="text-xs font-semibold text-peach flex items-center gap-1">Action needed</span>
+                <span className="text-xs font-semibold text-peach flex items-center gap-1">Outstanding</span>
               </div>
-              <h3 className="text-3xl font-bold text-ink tracking-tight mb-1">2</h3>
-              <p className="text-sm text-slate font-medium">Pending actions</p>
+              <h3 className="text-3xl font-bold text-ink tracking-tight mb-1">₹{analytics?.outstandingAmount || 0}</h3>
+              <p className="text-sm text-slate font-medium">Outstanding payments</p>
             </div>
           </div>
 
@@ -184,72 +210,68 @@ const Dashboard = () => {
                   <button className="text-primary text-xs font-semibold hover:underline">View Calendar</button>
                 </div>
                 <div className="divide-y divide-border/60">
-                  {[
-                    { name: 'Arjun M.', time: '10:00 AM', type: 'Intake Session', mode: 'Online', action: 'Join Call' },
-                    { name: 'Priya K.', time: '11:30 AM', type: 'CBT', mode: 'In-person', action: 'View Details' },
-                    { name: 'Rohan & Neha', time: '3:00 PM', type: 'Couples Counseling', mode: 'Online', action: 'Join Call' }
-                  ].map((session, idx) => (
-                    <div key={idx} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-bg-card-elevated transition-colors">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
-                          {session.name.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-ink">{session.name}</p>
-                          <div className="flex items-center gap-2 mt-1 text-xs text-slate">
-                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {session.time}</span>
-                            <span>•</span>
-                            <span>{session.type}</span>
+                  {analytics?.todaysSessions?.length === 0 ? (
+                    <div className="p-8 text-center text-slate">No sessions scheduled for today.</div>
+                  ) : (
+                    analytics?.todaysSessions?.map((session, idx) => (
+                      <div key={idx} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-bg-card-elevated transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm uppercase">
+                            {session.clientId?.name?.charAt(0) || '?'}
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-ink">{session.clientId?.name}</p>
+                            <div className="flex items-center gap-2 mt-1 text-xs text-slate">
+                              <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(session.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                              <span>•</span>
+                              <span>{session.type}</span>
+                            </div>
                           </div>
                         </div>
+                        <div className="flex items-center gap-3">
+                          <span className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded-md bg-sage-soft text-sage border border-sage/20`}>
+                            {session.mode || 'Online'}
+                          </span>
+                          <Button variant="secondary" className="text-xs px-3 py-1.5 h-auto">
+                            Join Call
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded-md ${session.mode === 'Online' ? 'bg-sage-soft text-sage border border-sage/20' : 'bg-white/50 text-slate border border-border'}`}>
-                          {session.mode}
-                        </span>
-                        <Button variant="secondary" className="text-xs px-3 py-1.5 h-auto">
-                          {session.action}
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
 
-              {/* Revenue Overview */}
-              <div className="bg-bg-card rounded-card p-6 border border-border shadow-sm">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-                  <h3 className="text-base font-bold text-ink">Revenue Overview</h3>
-                  <div className="flex items-center bg-bg-card-elevated p-1 rounded-lg border border-border">
-                    {['Week', 'Month', 'Year'].map(tab => (
-                      <button key={tab} className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-colors ${tab === 'Month' ? 'bg-white shadow-sm text-ink' : 'text-slate hover:text-ink'}`}>
-                        {tab}
-                      </button>
-                    ))}
-                  </div>
+              {/* Upcoming Schedule */}
+              <div className="bg-bg-card rounded-card border border-border shadow-sm">
+                <div className="px-6 py-5 border-b border-border flex items-center justify-between">
+                  <h3 className="text-base font-bold text-ink">Upcoming (Next 7 Days)</h3>
                 </div>
-                
-                {/* Simple CSS Chart */}
-                <div className="h-48 flex items-end justify-between gap-2 px-2">
-                  {[40, 65, 45, 80, 55, 90, 70].map((height, i) => (
-                    <div key={i} className="w-full relative group">
-                      <div 
-                        className="w-full bg-primary/40 group-hover:bg-primary transition-colors rounded-t-md" 
-                        style={{ height: `${height}%` }}
-                      ></div>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between mt-3 px-2 text-xs text-slate font-medium">
-                  <span>Jan</span>
-                  <span>Feb</span>
-                  <span>Mar</span>
-                  <span>Apr</span>
-                  <span>May</span>
-                  <span>Jun</span>
-                  <span>Jul</span>
+                <div className="divide-y divide-border/60">
+                  {analytics?.upcomingSessions?.length === 0 ? (
+                    <div className="p-8 text-center text-slate">No upcoming sessions.</div>
+                  ) : (
+                    analytics?.upcomingSessions?.map((session, idx) => (
+                      <div key={idx} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-bg-card-elevated transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <p className="text-sm font-bold text-ink">{session.clientId?.name}</p>
+                            <div className="flex items-center gap-2 mt-1 text-xs text-slate">
+                              <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(session.startTime).toLocaleDateString()} {new Date(session.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded-md bg-slate/10 text-slate`}>
+                            {session.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
+
             </div>
 
             {/* Right Column: Practice Pulse */}
@@ -276,31 +298,34 @@ const Dashboard = () => {
                     <div className="flex items-center justify-between group cursor-pointer">
                       <div className="flex items-center gap-3 text-white/80 group-hover:text-white transition-colors">
                         <div className="p-2 bg-white/5 rounded-lg"><Users className="w-4 h-4" /></div>
-                        <span className="text-sm font-medium">Unread messages</span>
+                        <span className="text-sm font-medium">Pending Intake</span>
                       </div>
-                      <span className="text-sm font-bold text-white bg-primary/40 px-2.5 py-0.5 rounded-full">3</span>
-                    </div>
-
-                    <div className="flex items-center justify-between group cursor-pointer">
-                      <div className="flex items-center gap-3 text-white/80 group-hover:text-white transition-colors">
-                        <div className="p-2 bg-white/5 rounded-lg"><IndianRupee className="w-4 h-4" /></div>
-                        <span className="text-sm font-medium">Pending payments</span>
-                      </div>
-                      <span className="text-sm font-bold text-peach bg-peach/10 px-2.5 py-0.5 rounded-full border border-peach/20">₹4,500</span>
+                      <span className="text-sm font-bold text-white bg-primary/40 px-2.5 py-0.5 rounded-full">{analytics?.pendingIntake || 0}</span>
                     </div>
 
                     <div className="flex items-center justify-between group cursor-pointer">
                       <div className="flex items-center gap-3 text-white/80 group-hover:text-white transition-colors">
                         <div className="p-2 bg-white/5 rounded-lg"><FileText className="w-4 h-4" /></div>
-                        <span className="text-sm font-medium">Incomplete notes</span>
+                        <span className="text-sm font-medium">Pending Consent</span>
                       </div>
-                      <span className="text-sm font-bold text-warning bg-warning/10 px-2.5 py-0.5 rounded-full border border-warning/20">2</span>
+                      <span className="text-sm font-bold text-peach bg-peach/10 px-2.5 py-0.5 rounded-full border border-peach/20">{analytics?.pendingConsent || 0}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between group cursor-pointer">
+                      <div className="flex items-center gap-3 text-white/80 group-hover:text-white transition-colors">
+                        <div className="p-2 bg-white/5 rounded-lg"><CheckCircle2 className="w-4 h-4" /></div>
+                        <span className="text-sm font-medium">Unread Notifications</span>
+                      </div>
+                      <span className="text-sm font-bold text-warning bg-warning/10 px-2.5 py-0.5 rounded-full border border-warning/20">{analytics?.unreadNotifications || 0}</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+          </>
+          )}
+      </main>
     </>
   );
 };

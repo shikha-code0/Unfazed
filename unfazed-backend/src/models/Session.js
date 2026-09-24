@@ -83,5 +83,6 @@ const sessionSchema = new mongoose.Schema(
 // Index for efficient queries
 sessionSchema.index({ therapistId: 1, startTime: 1 });
 sessionSchema.index({ clientEmail: 1 });
+sessionSchema.index({ therapistId: 1, clientId: 1, startTime: 1 });
 
 module.exports = mongoose.model('Session', sessionSchema);

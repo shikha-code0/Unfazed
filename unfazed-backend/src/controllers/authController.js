@@ -132,6 +132,60 @@ const loginTherapist = async (req, res, next) => {
   }
 };
 
+// Helper to generate JWT Token for client
+const generateClientToken = (id) => {
+  return jwt.sign({ id, role: 'client' }, process.env.JWT_SECRET || 'unfazed_jwt_secret_key_change_in_production_2026', {
+    expiresIn: '30d',
+  });
+};
+
+// @desc    Authenticate client & get token
+// @route   POST /api/auth/client/login
+// @access  Public
+const loginClient = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const emailLower = email.toLowerCase().trim();
+    
+    // We import Client model here to avoid circular dependencies at the top level
+    const Client = require('../models/Client');
+    
+    const client = await Client.findOne({ email: emailLower });
+
+    if (!client || !client.passwordHash) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password.',
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, client.passwordHash);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password.',
+      });
+    }
+
+    const token = generateClientToken(client._id);
+
+    res.json({
+      success: true,
+      message: 'Login successful!',
+      token,
+      client: {
+        id: client._id,
+        name: client.name,
+        email: client.email,
+        therapistId: client.therapistId,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Get logged in therapist details
 // @route   GET /api/auth/me
 // @access  Private
@@ -142,8 +196,20 @@ const getMe = async (req, res) => {
   });
 };
 
+// @desc    Get logged in client details
+// @route   GET /api/auth/client/me
+// @access  Private
+const getClientMe = async (req, res) => {
+  res.json({
+    success: true,
+    client: req.client,
+  });
+};
+
 module.exports = {
   registerTherapist,
   loginTherapist,
   getMe,
+  loginClient,
+  getClientMe,
 };

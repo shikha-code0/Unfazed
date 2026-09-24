@@ -1,71 +1,97 @@
-const Invoice = require('../models/Invoice');
+const Payment = require('../models/Payment');
 const Client = require('../models/Client');
 
-// @desc    Get all invoices for therapist
-// @route   GET /api/payments/invoices
+// @desc    Get all payments for therapist
+// @route   GET /api/payments
 // @access  Private
-const getInvoices = async (req, res, next) => {
+const getPayments = async (req, res, next) => {
   try {
-    const invoices = await Invoice.find({ therapistId: req.therapist._id })
+    const payments = await Payment.find({ therapistId: req.therapist._id })
       .populate('clientId', 'name email')
       .sort({ createdAt: -1 });
-    res.json({ success: true, invoices });
+    res.json({ success: true, payments });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Create a new invoice
-// @route   POST /api/payments/invoices
+// @desc    Get a single payment
+// @route   GET /api/payments/:id
 // @access  Private
-const createInvoice = async (req, res, next) => {
+const getPaymentById = async (req, res, next) => {
   try {
-    const { clientId, sessionId, amount, dueDate, items, notes } = req.body;
-    
-    // Generate Invoice Number (Mock)
-    const count = await Invoice.countDocuments({ therapistId: req.therapist._id });
-    const invoiceNumber = `INV-${new Date().getFullYear()}-${(count + 1).toString().padStart(4, '0')}`;
+    const payment = await Payment.findOne({ _id: req.params.id, therapistId: req.therapist._id })
+      .populate('clientId', 'name email');
+      
+    if (!payment) {
+      return res.status(404).json({ success: false, message: 'Payment not found' });
+    }
 
-    const invoice = await Invoice.create({
+    res.json({ success: true, payment });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Create a new payment
+// @route   POST /api/payments
+// @access  Private
+const createPayment = async (req, res, next) => {
+  try {
+    const { clientId, bookingId, amount, currency, method, status, transactionId, notes } = req.body;
+    
+    // Validate client belongs to therapist
+    const client = await Client.findOne({ _id: clientId, therapistId: req.therapist._id });
+    if (!client) {
+      return res.status(404).json({ success: false, message: 'Client not found' });
+    }
+
+    const payment = await Payment.create({
       therapistId: req.therapist._id,
       clientId,
-      sessionId,
-      invoiceNumber,
+      bookingId,
       amount,
-      dueDate,
-      items,
+      currency,
+      method,
+      status,
+      transactionId,
       notes,
     });
 
-    res.status(201).json({ success: true, invoice });
+    res.status(201).json({ success: true, payment });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Mark invoice as paid
-// @route   PATCH /api/payments/invoices/:id/pay
+// @desc    Update a payment
+// @route   PATCH /api/payments/:id
 // @access  Private
-const markAsPaid = async (req, res, next) => {
+const updatePayment = async (req, res, next) => {
   try {
-    const invoice = await Invoice.findOneAndUpdate(
-      { _id: req.params.id, therapistId: req.therapist._id },
-      { status: 'paid', paidAt: new Date() },
-      { new: true }
-    );
-
-    if (!invoice) {
-      return res.status(404).json({ success: false, message: 'Invoice not found' });
+    const payment = await Payment.findOne({ _id: req.params.id, therapistId: req.therapist._id });
+    
+    if (!payment) {
+      return res.status(404).json({ success: false, message: 'Payment not found' });
     }
 
-    res.json({ success: true, invoice });
+    const { status, transactionId, notes } = req.body;
+
+    if (status) payment.status = status;
+    if (transactionId) payment.transactionId = transactionId;
+    if (notes !== undefined) payment.notes = notes;
+
+    await payment.save();
+
+    res.json({ success: true, payment });
   } catch (error) {
     next(error);
   }
 };
 
 module.exports = {
-  getInvoices,
-  createInvoice,
-  markAsPaid,
+  getPayments,
+  getPaymentById,
+  createPayment,
+  updatePayment,
 };

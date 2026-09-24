@@ -1,48 +1,23 @@
-import axios from 'axios';
+import api from './axios';
 
-const API_URL = '/api/clients';
+const API_URL = '/clients';
 
-export const getClients = async () => {
-  const response = await axios.get(API_URL);
-  return response.data;
-};
+const unwrap = (response) => response.data;
 
-export const getClientById = async (id) => {
-  const response = await axios.get(`${API_URL}/${id}`);
-  return response.data;
-};
+export const getClients = async () => unwrap(await api.get(API_URL));
 
-export const createClient = async (clientData) => {
-  const response = await axios.post(API_URL, clientData);
-  return response.data;
-};
+export const getClientById = async (id) => unwrap(await api.get(`${API_URL}/${id}`));
 
-export const updateClient = async (id, clientData) => {
-  const response = await axios.put(`${API_URL}/${id}`, clientData);
-  return response.data;
-};
+export const createClient = async (clientData) => unwrap(await api.post(API_URL, clientData));
 
-export const deleteClient = async (id) => {
-  const response = await axios.delete(`${API_URL}/${id}`);
-  return response.data;
-};
+export const updateClient = async (id, clientData) => unwrap(await api.patch(`${API_URL}/${id}`, clientData));
 
-export const getClientIntake = async (id) => {
-  const response = await axios.get(`${API_URL}/${id}/intake`);
-  return response.data;
-};
+export const deleteClient = async (id) => unwrap(await api.delete(`${API_URL}/${id}`));
 
-export const updateClientIntake = async (id, intakeData) => {
-  const response = await axios.put(`${API_URL}/${id}/intake`, intakeData);
-  return response.data;
-};
+export const getClientIntake = async (id) => unwrap(await api.get(`${API_URL}/${id}/intake`));
 
-export const getClientConsent = async (id) => {
-  const response = await axios.get(`${API_URL}/${id}/consent`);
-  return response.data;
-};
+export const updateClientIntake = async (id, intakeData) => unwrap(await api.put(`${API_URL}/${id}/intake`, intakeData));
 
-export const createClientConsent = async (id, consentData) => {
-  const response = await axios.post(`${API_URL}/${id}/consent`, consentData);
-  return response.data;
-};
+export const getClientConsent = async (id) => unwrap(await api.get(`${API_URL}/${id}/consent`));
+
+export const createClientConsent = async (id, consentData) => unwrap(await api.post(`${API_URL}/${id}/consent`, consentData));

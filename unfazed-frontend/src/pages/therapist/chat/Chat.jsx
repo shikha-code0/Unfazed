@@ -35,9 +35,10 @@ const Chat = () => {
     try {
       const res = await api.get('/clients');
       if (res.data.success) {
-        setClients(res.data.clients);
-        if (res.data.clients.length > 0) {
-          setSelectedClient(res.data.clients[0]);
+        const list = res.data.data || res.data.clients || [];
+        setClients(list);
+        if (list.length > 0) {
+          setSelectedClient(list[0]);
         } else {
           setLoading(false);
         }

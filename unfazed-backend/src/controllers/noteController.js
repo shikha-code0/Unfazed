@@ -72,8 +72,26 @@ const updateNote = async (req, res, next) => {
   }
 };
 
+// @desc    Delete a note
+// @route   DELETE /api/notes/:id
+// @access  Private
+const deleteNote = async (req, res, next) => {
+  try {
+    const note = await Note.findOneAndDelete({ _id: req.params.id, therapistId: req.therapist._id });
+    
+    if (!note) {
+      return res.status(404).json({ success: false, message: 'Note not found' });
+    }
+
+    res.json({ success: true, message: 'Note deleted' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getClientNotes,
   createNote,
   updateNote,
+  deleteNote,
 };

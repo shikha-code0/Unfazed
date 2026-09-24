@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { Menu, Bell, Search, ExternalLink, LogOut, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import NotificationsPopover from './NotificationsPopover';
+import GlobalSearch from './GlobalSearch';
 
 const Topbar = ({ onOpenSidebar, title = 'Overview' }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isHoveringNav, setIsHoveringNav] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -32,25 +35,13 @@ const Topbar = ({ onOpenSidebar, title = 'Overview' }) => {
 
       {/* Right Controls */}
       <div className="flex items-center gap-3 lg:gap-4">
-        {/* Search Bar */}
-        <div className="relative hidden md:block w-60 lg:w-72">
-          <Search className="w-4 h-4 text-slate absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search clients, notes..."
-            className="w-full h-10 pl-9 pr-3 text-xs bg-bg-card border border-border rounded-lg text-ink placeholder:text-slate/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-          />
-        </div>
-
-        {/* Notifications */}
-        <button
-          type="button"
-          className="relative p-2 text-slate hover:text-ink hover:bg-bg-main rounded-full transition-colors"
-          title="Notifications"
-        >
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface"></span>
-        </button>
+        
+        {user?.role === 'therapist' && (
+          <>
+            <GlobalSearch />
+            <NotificationsPopover onHover={() => setIsHoveringNav(true)} />
+          </>
+        )}
 
         {/* User Menu */}
         <div className="relative">

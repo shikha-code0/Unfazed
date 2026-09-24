@@ -18,6 +18,8 @@ import Notes from './pages/therapist/clinical/Notes';
 import Chat from './pages/therapist/chat/Chat';
 import Analytics from './pages/therapist/analytics/Analytics';
 import AppLayout from './layouts/AppLayout';
+import ClientLogin from './pages/client/ClientLogin';
+import ClientPortal from './pages/client/ClientPortal';
 
 function App() {
   return (
@@ -28,19 +30,26 @@ function App() {
             {/* Public Auth Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            
+            <Route path="/client/login" element={<ClientLogin />} />
 
             {/* Protected Therapist Routes */}
-            <Route element={<ProtectedRoute />}>
+            <Route element={<ProtectedRoute allowedRole="therapist" />}>
               <Route element={<AppLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/schedule" element={<Schedule />} />
                 <Route path="/clients" element={<ClientsList />} />
-                <Route path="/clients/:id" element={<ClientProfile />} />
+                <Route path="/clients/:clientId" element={<ClientProfile />} />
                 <Route path="/payments" element={<Payments />} />
                 <Route path="/notes" element={<Notes />} />
                 <Route path="/chat" element={<Chat />} />
                 <Route path="/analytics" element={<Analytics />} />
               </Route>
+            </Route>
+
+            {/* Protected Client Routes */}
+            <Route element={<ProtectedRoute allowedRole="client" />}>
+              <Route path="/portal" element={<ClientPortal />} />
             </Route>
 
             {/* Public Therapist Routes */}

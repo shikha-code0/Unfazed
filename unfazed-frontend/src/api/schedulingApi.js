@@ -13,10 +13,12 @@ export const schedulingApi = {
     return response.data;
   },
 
-  getMySchedule: async (startDate, endDate) => {
-    const response = await api.get('/scheduling/me', {
-      params: { startDate, endDate }
-    });
+  getMySchedule: async (startDate, endDate, clientId) => {
+    const params = {};
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+    if (clientId) params.clientId = clientId;
+    const response = await api.get('/scheduling/me', { params });
     return response.data;
   },
 

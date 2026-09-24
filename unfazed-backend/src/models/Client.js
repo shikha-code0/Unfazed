@@ -18,6 +18,9 @@ const clientSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    passwordHash: {
+      type: String,
+    },
     phone: {
       type: String,
       trim: true,
@@ -61,6 +64,7 @@ const clientSchema = new mongoose.Schema(
   }
 );
 
-clientSchema.index({ therapistId: 1, email: 1 });
+clientSchema.index({ therapistId: 1, email: 1 }, { unique: true });
+clientSchema.index({ therapistId: 1, status: 1 });
 
 module.exports = mongoose.model('Client', clientSchema);

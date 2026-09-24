@@ -1,8 +1,8 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const router = express.Router();
-const { registerTherapist, loginTherapist, getMe } = require('../controllers/authController');
-const { protect } = require('../middleware/authMiddleware');
+const { registerTherapist, loginTherapist, getMe, loginClient, getClientMe } = require('../controllers/authController');
+const { protect, protectClient } = require('../middleware/authMiddleware');
 
 // Validation middleware to handle validation errors
 const handleValidationErrors = (req, res, next) => {
@@ -48,5 +48,8 @@ const loginValidationRules = () => [
 router.post('/register', registerValidationRules(), handleValidationErrors, registerTherapist);
 router.post('/login', loginValidationRules(), handleValidationErrors, loginTherapist);
 router.get('/me', protect, getMe);
+
+router.post('/client/login', loginValidationRules(), handleValidationErrors, loginClient);
+router.get('/client/me', protectClient, getClientMe);
 
 module.exports = router;
