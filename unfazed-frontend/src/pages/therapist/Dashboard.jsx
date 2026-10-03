@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/common/Sidebar';
 import Topbar from '../../components/common/Topbar';
 import Button from '../../components/common/Button';
@@ -25,6 +26,7 @@ import {
 
 const Dashboard = () => {
   const { user, updateProfile } = useAuth();
+  const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -207,7 +209,7 @@ const Dashboard = () => {
               <div className="bg-bg-card rounded-card border border-border shadow-sm">
                 <div className="px-6 py-5 border-b border-border flex items-center justify-between">
                   <h3 className="text-base font-bold text-ink">Today's Schedule</h3>
-                  <button className="text-primary text-xs font-semibold hover:underline">View Calendar</button>
+                  <button onClick={() => navigate('/schedule')} className="text-primary text-xs font-semibold hover:underline">View Calendar</button>
                 </div>
                 <div className="divide-y divide-border/60">
                   {analytics?.todaysSessions?.length === 0 ? (

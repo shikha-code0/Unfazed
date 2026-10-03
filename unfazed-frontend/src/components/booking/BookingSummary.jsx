@@ -18,48 +18,78 @@ const BookingSummary = ({
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState('');
 
+  // Parse the time prop to a valid Date object safely
+  const parseTime = (t) => {
+    if (!t) return null;
+    const d = new Date(t);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  const parsedTime = parseTime(time);
+
+  const getDurationMinutes = (durationStr) => {
+    const n = parseInt(durationStr);
+    return isNaN(n) ? 50 : n;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!consent) return;
-    
+
     setError('');
+
+    // Validate time is parseable
+    if (!parsedTime) {
+      setError('Please select a valid appointment time before confirming.');
+      return;
+    }
+    if (!date) {
+      setError('Please select a date before confirming.');
+      return;
+    }
+    if (!clientDetails.name?.trim() || !clientDetails.email?.trim()) {
+      setError('Full name and email are required.');
+      return;
+    }
+
     setLoading(true);
-    
+
     try {
-      // Create booking payload
+      const durationMins = getDurationMinutes(service?.duration);
+      const endTimeISO = new Date(parsedTime.getTime() + durationMins * 60000).toISOString();
+
       const bookingData = {
         therapistSlug,
-        clientName: clientDetails.name,
-        clientEmail: clientDetails.email,
-        clientPhone: clientDetails.phone,
+        clientName: clientDetails.name.trim(),
+        clientEmail: clientDetails.email.trim().toLowerCase(),
+        clientPhone: clientDetails.phone?.trim() || '',
         serviceType: service.title,
         sessionMode: 'Online',
-        startTime: time, // Already an ISO string from SlotPicker
-        endTime: new Date(new Date(time).getTime() + (service.duration || 50) * 60000).toISOString(),
+        startTime: parsedTime.toISOString(),
+        endTime: endTimeISO,
         timezone: 'Asia/Kolkata',
-        presentingConcern: clientDetails.concern,
+        presentingConcern: clientDetails.concern?.trim() || '',
         consentGiven: true,
       };
-      
-      // Call booking API
+
       const response = await api.post('/scheduling/book', bookingData);
-      
+
       if (response.data.success) {
-        // Call onConfirm with booking data
         onConfirm({
           date,
-          time: new Date(time).toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
+          time: parsedTime.toLocaleTimeString('en-US', {
+            hour: '2-digit',
             minute: '2-digit',
-            hour12: true
+            hour12: true,
           }),
         });
       } else {
-        setError(response.data.message || 'Booking failed. Please try again.');
-        if (onError) onError(response.data.message);
+        const msg = response.data.message || 'Booking failed. Please try again.';
+        setError(msg);
+        if (onError) onError(msg);
       }
     } catch (err) {
-      const errorMsg = err.response?.data?.message || err.message || 'Failed to book session';
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to book session. Please try again.';
       setError(errorMsg);
       if (onError) onError(errorMsg);
     } finally {
@@ -82,7 +112,7 @@ const BookingSummary = ({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form id="booking-form" onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-bold text-ink mb-1.5">Full Name</label>
@@ -187,13 +217,13 @@ const BookingSummary = ({
                 </div>
                 <div>
                   <div className="font-bold text-ink">
-                    {time ? new Date(time).toLocaleTimeString('en-US', { 
-                      hour: '2-digit', 
+                    {parsedTime ? parsedTime.toLocaleTimeString('en-US', {
+                      hour: '2-digit',
                       minute: '2-digit',
-                      hour12: true
-                    }) : 'TBD'}
+                      hour12: true,
+                    }) : 'Select a time'}
                   </div>
-                  <div className="text-xs text-slate">{service?.duration} min session</div>
+                  <div className="text-xs text-slate">{service?.duration} session</div>
                 </div>
               </div>
             </div>
@@ -204,15 +234,16 @@ const BookingSummary = ({
             Payment will be requested after confirmation.
           </div>
 
-          <Button 
-            variant="primary" 
-            className="w-full justify-center" 
+          <Button
+            variant="primary"
+            type="submit"
+            form="booking-form"
+            className="w-full justify-center"
             size="lg"
-            onClick={handleSubmit}
             loading={loading}
-            disabled={!consent}
+            disabled={!consent || !parsedTime || loading}
           >
-            Confirm Booking
+            {loading ? 'Booking...' : 'Confirm Booking'}
           </Button>
           
           <p className="text-center text-[11px] text-slate mt-4">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft, Mail, Phone, Calendar, Clock, FileText, UserCircle,
@@ -85,6 +85,7 @@ const ClientProfile = () => {
     try {
       const res = await api.post('/notes', {
         clientId,
+        title: 'Quick Note - ' + new Date().toLocaleDateString(),
         content: newNote,
         type: 'progress'
       });
@@ -178,7 +179,7 @@ const ClientProfile = () => {
           </div>
           <div className="flex flex-wrap gap-3 relative">
             <Button variant="primary" icon={Calendar} onClick={handleBook}>Book Session</Button>
-            <Button variant="secondary" icon={MessageSquare} onClick={() => setToast({ message: 'Messaging arrives in a later module.', type: 'info' })}>
+            <Button variant="secondary" icon={MessageSquare} onClick={() => navigate('/chat')}>
               Send Message
             </Button>
             <Button variant="ghost" icon={MoreVertical} onClick={() => setMenuOpen((v) => !v)} />
@@ -334,7 +335,7 @@ const ClientProfile = () => {
           <div className="bg-bg-card border border-border rounded-xl shadow-sm p-6 min-h-[300px]">
             <div className="flex justify-between items-center mb-6">
               <h3 className="font-bold text-ink">Payments & Packages</h3>
-              <Button variant="secondary" size="sm">Record Payment</Button>
+              <Button variant="secondary" size="sm" onClick={() => navigate('/payments')}>Record Payment</Button>
             </div>
             
             <div className="mb-6 grid grid-cols-2 gap-4">

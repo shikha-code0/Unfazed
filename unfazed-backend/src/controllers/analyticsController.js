@@ -16,7 +16,7 @@ const getAnalytics = async (req, res, next) => {
     const todaysSessions = await Session.find({
       therapistId,
       startTime: { $gte: todayStart, $lte: todayEnd },
-      status: { $in: ['scheduled', 'completed', 'in-progress'] }
+      status: { $in: ['confirmed', 'pending', 'completed'] }
     }).populate('clientId', 'name').sort({ startTime: 1 });
 
     // 2. Upcoming Sessions (Next 7 days, excluding today)
@@ -25,7 +25,7 @@ const getAnalytics = async (req, res, next) => {
     const upcomingSessions = await Session.find({
       therapistId,
       startTime: { $gte: upcomingStart, $lte: upcomingEnd },
-      status: 'scheduled'
+      status: { $in: ['confirmed', 'pending'] }
     }).populate('clientId', 'name').sort({ startTime: 1 }).limit(5);
 
     // 3. Total active clients

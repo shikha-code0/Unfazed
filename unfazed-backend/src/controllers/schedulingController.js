@@ -366,6 +366,124 @@ const cancelMySession = async (req, res, next) => {
   }
 };
 
+// @desc    Create a session/appointment (therapist dashboard)
+// @route   POST /api/scheduling/me
+// @access  Private
+const createMySession = async (req, res, next) => {
+  try {
+    const {
+      clientId,
+      clientName,
+      clientEmail,
+      clientPhone,
+      serviceType,
+      sessionMode,
+      startTime,
+      endTime,
+      timezone,
+      notes,
+    } = req.body;
+
+    // Validate required fields
+    if (!clientName || !clientEmail || !serviceType || !startTime || !endTime) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: clientName, clientEmail, serviceType, startTime, endTime.',
+      });
+    }
+
+    // Parse dates safely
+    const startDate = new Date(startTime);
+    const endDate = new Date(endTime);
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid startTime or endTime. Use ISO 8601 format.',
+      });
+    }
+
+    if (startDate >= endDate) {
+      return res.status(400).json({
+        success: false,
+        message: 'startTime must be before endTime.',
+      });
+    }
+
+    // Get availability and validate conflict
+    const availability = await Availability.findOne({ therapistId: req.therapist._id });
+
+    if (availability) {
+      const validation = await SlotService.validateBookingTime(
+        availability,
+        req.therapist._id,
+        startDate,
+        endDate,
+        timezone || availability.timezone || 'Asia/Kolkata'
+      );
+      if (!validation.valid) {
+        return res.status(409).json({
+          success: false,
+          message: validation.reason || 'This time slot is not available.',
+        });
+      }
+    } else {
+      // No availability configured — just check for double booking
+      const isAvail = await SlotService.isSlotAvailable(req.therapist._id, startDate, endDate);
+      if (!isAvail) {
+        return res.status(409).json({
+          success: false,
+          message: 'This time slot conflicts with an existing appointment.',
+        });
+      }
+    }
+
+    // Resolve clientId if not provided
+    let resolvedClientId = null;
+    if (clientId && mongoose.Types.ObjectId.isValid(clientId)) {
+      resolvedClientId = clientId;
+    } else {
+      // Try to find or create client
+      const Client = require('../models/Client');
+      let client = await Client.findOne({ therapistId: req.therapist._id, email: clientEmail.toLowerCase().trim() });
+      if (!client) {
+        client = await Client.create({
+          therapistId: req.therapist._id,
+          name: clientName.trim(),
+          email: clientEmail.toLowerCase().trim(),
+          phone: clientPhone?.trim() || '',
+          status: 'active',
+        });
+      }
+      resolvedClientId = client._id;
+    }
+
+    const newSession = await Session.create({
+      therapistId: req.therapist._id,
+      clientId: resolvedClientId,
+      clientName: clientName.trim(),
+      clientEmail: clientEmail.toLowerCase().trim(),
+      clientPhone: clientPhone?.trim() || '',
+      serviceType,
+      sessionMode: sessionMode || 'Online',
+      startTime: startDate,
+      endTime: endDate,
+      timezone: timezone || 'Asia/Kolkata',
+      status: 'confirmed',
+      paymentStatus: 'pending',
+      notes: notes?.trim() || '',
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Appointment created successfully!',
+      session: newSession,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getPublicSlots,
   bookSession,
@@ -373,4 +491,5 @@ module.exports = {
   getMySession,
   updateMySession,
   cancelMySession,
+  createMySession,
 };

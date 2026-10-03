@@ -38,7 +38,7 @@ const PublicProfile = () => {
         if (res.data.success) {
           setTherapist(res.data.therapist);
           // Set dynamic meta title
-          document.title = `${res.data.therapist.name} | Unfazed Verified Therapist`;
+          document.title = `${res.data.therapist.name} | Unfazed Therapist`;
         }
       } catch (err) {
         console.error(err);
@@ -80,7 +80,7 @@ const PublicProfile = () => {
         </div>
         <h2 className="text-2xl font-bold text-ink">Therapist Profile Not Found</h2>
         <p className="mt-2 text-sm text-slate max-w-md">
-          {error || 'We could not find a verified therapist profile at this web address.'}
+          {error || 'We could not find a therapist profile at this web address.'}
         </p>
         <Link to="/login" className="mt-6">
           <Button variant="primary">Return to Unfazed</Button>
@@ -234,12 +234,6 @@ const PublicProfile = () => {
                     className="w-full h-full object-cover"
                  />
                  <div className="absolute inset-0 bg-gradient-to-t from-ink/60 to-transparent"></div>
-                 <div className="absolute bottom-4 left-4 right-4 flex items-center gap-2">
-                   <div className="p-1.5 rounded-full bg-sage text-white shadow-sm">
-                     <ShieldCheck className="w-4 h-4" />
-                   </div>
-                   <span className="text-xs font-bold text-white tracking-wider uppercase">Verified</span>
-                 </div>
                </div>
             </div>
           </div>

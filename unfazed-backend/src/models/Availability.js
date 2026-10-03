@@ -56,17 +56,18 @@ const availabilitySchema = new mongoose.Schema(
       default: [],
     },
     dateOverrides: {
-      // Manual overrides for specific dates
+      // Manual overrides for specific dates (incl. time-off)
       type: Map,
-      of: {
-        enabled: Boolean,
+      of: new mongoose.Schema({
+        enabled: { type: Boolean, default: false },
+        reason: { type: String, default: '' },
         periods: [
           {
             startTime: String,
             endTime: String,
           },
         ],
-      },
+      }, { _id: false }),
       default: new Map(),
     },
     isPublished: {

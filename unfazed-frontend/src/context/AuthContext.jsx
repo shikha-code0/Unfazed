@@ -90,8 +90,9 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (updates) => {
     const res = await api.put('/therapists/me', updates);
     if (res.data.success) {
-      setUser(res.data.therapist);
-      localStorage.setItem('unfazed_user', JSON.stringify(res.data.therapist));
+      const updatedUser = { ...res.data.therapist, role: 'therapist' };
+      setUser(updatedUser);
+      localStorage.setItem('unfazed_user', JSON.stringify(updatedUser));
     }
     return res.data;
   };

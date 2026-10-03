@@ -11,6 +11,8 @@ const Button = ({
   onClick,
   className = '',
   icon: Icon = null,
+  form,
+  ...rest
 }) => {
   const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-[10px] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed select-none';
 
@@ -28,12 +30,20 @@ const Button = ({
     lg: 'text-base px-6 py-3 min-h-[50px]',
   };
 
+  // Also include "outline" variant that's used in forms
+  const variantMap = {
+    ...variants,
+    outline: 'bg-transparent text-ink border border-border hover:border-primary/50 hover:bg-primary-light/20 focus:ring-primary',
+  };
+
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
-      className={`${baseStyles} ${variants[variant]} ${variant !== 'icon' ? sizes[size] : ''} ${className}`}
+      form={form}
+      className={`${baseStyles} ${variantMap[variant] || variants.primary} ${variant !== 'icon' ? sizes[size] : ''} ${className}`}
+      {...rest}
     >
       {loading ? (
         <Loader size="sm" color={variant === 'primary' ? 'white' : 'primary'} />
