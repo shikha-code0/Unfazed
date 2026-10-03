@@ -26,9 +26,12 @@ app.use(express.urlencoded({ extended: true }));
 
 // Health Check Endpoint
 app.get('/api/health', (req, res) => {
+  const mongoose = require('mongoose');
+  const isConnected = mongoose.connection.readyState === 1;
   res.status(200).json({
-    status: 'OK',
-    message: 'Unfazed API service is healthy and operational.',
+    success: true,
+    message: 'Unfazed API is running',
+    database: isConnected ? 'connected' : 'disconnected',
     timestamp: new Date().toISOString(),
   });
 });

@@ -14,11 +14,11 @@ async function run() {
       storageEngine: 'wiredTiger',
     },
     binary: {
-      version: '4.4.29' // Using an older version to bypass DLL issues
+      version: '4.0.28'
     }
   });
 
-  console.log(`MongoDB persistent memory server successfully started on ${mongod.getUri()}`);
+  console.log('MongoDB persistent memory server successfully started on ' + mongod.getUri());
   console.log('Keep this process running...');
 }
 run();
