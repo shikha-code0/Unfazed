@@ -1,5 +1,5 @@
 async function testApi() {
-  const baseUrl = 'http://localhost:5000/api';
+  const baseUrl = 'http://https://unfazed-y9ej.onrender.com/api';
   console.log('=== Unfazed Module 1 API Verification ===');
 
   // 1. Health check

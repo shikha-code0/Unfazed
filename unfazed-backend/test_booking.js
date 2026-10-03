@@ -1,7 +1,7 @@
 const assert = require('assert');
 
 async function testBookingFlow() {
-  const API_URL = 'http://localhost:5000/api';
+  const API_URL = 'https://unfazed-y9ej.onrender.com/api';
   console.log('Testing booking flow against', API_URL);
 
   try {
