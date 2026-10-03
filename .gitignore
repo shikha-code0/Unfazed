@@ -4,3 +4,6 @@ node_modules/
 dist/
 build/
 *.log
+
+unfazed-backend/mongodb-data/
+unfazed-backend/vc_redist.x64.exe
